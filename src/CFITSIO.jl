@@ -13,6 +13,7 @@ export FITSFile,
     fits_create_diskfile,
     fits_create_file,
     fits_create_img,
+    fits_create_empty_hdu,
     fits_delete_file,
     fits_delete_key,
     fits_delete_record,
@@ -1101,6 +1102,44 @@ function fits_create_img(f::FITSFile, ::Type{T}, naxes::NTuple{N,Integer}) where
     )
     fits_assert_ok(status[])
 end
+
+
+# This method accepts `nothing` as input to create an empty HDU. 
+function fits_create_img(f::FITSFile, a::Nothing)
+
+    status = fits_create_empty_hdu(f)
+
+end
+
+"""
+    fits_create_empty_hdu(f::FITSFile)
+
+Create an empty HDU.
+"""
+function fits_create_empty_hdu(f::FITSFile)
+
+    status = Ref{Cint}(0)
+    naxesr = C_NULL
+    N = 0
+    bitpix = bitpix_from_type(Int16)
+
+    ccall(
+         (:ffcrimll, libcfitsio),
+         Cint,
+         (Ptr{Cvoid}, Cint, Cint, Ptr{Int64}, Ref{Cint}),
+         f.ptr,
+         bitpix,
+         N,
+         naxesr,
+         status,
+     )
+
+    fits_assert_ok(status[])
+end
+
+
+
+
 
 """
     fits_create_img(f::FITSFile, A::AbstractArray)
